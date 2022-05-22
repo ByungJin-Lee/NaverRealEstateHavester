@@ -2,6 +2,9 @@ from tkinter import OFF
 from haversine import haversine
 import requests
 
+BASE_API_URL = "https://new.land.naver.com/api/"
+IS_LOGGING = True
+
 class NRE_ROUTER:
     REGION_LIST='regions/list'
     CORTARS='cortars'
@@ -9,19 +12,30 @@ class NRE_ROUTER:
     NEIGHBORHOOD='regions/neighborhoods'
 
 class NNeighborAround:
-    def __init__(self, bus = 0, metro = 0, kid = 0, preschool = 0, school = 0, hospital = 0, parking = 0, mart = 0, convi = 0, wash = 0, bank = 0, office = 0) -> None:
-        self.bus = bus
-        self.metro = metro
-        self.kid = kid
-        self.preschool = preschool
-        self.school = school
-        self.hospital = hospital
-        self.parking = parking
-        self.mart = mart
-        self.convi = convi
-        self.wash = wash
-        self.bank = bank
-        self.office = office
+    HEADER = ['BUS','METRO','INFANT','PRESCHOOL','SCHOOLPOI','HOSPITAL',
+    'PARKING','MART','CONVENIENCE','WASHING','BANK','OFFICE']
+
+    def __init__(self) -> None:
+        self.counter = {
+            'BUS': 0,
+            'METRO' : 0,
+            'INFANT' : 0,
+            'PRESCHOOL' : 0,
+            'SCHOOLPOI' : 0,
+            'HOSPITAL' : 0,
+            'PARKING' : 0,
+            'MART' : 0,
+            'CONVENIENCE': 0,
+            'WASHING': 0,
+            'BANK' : 0,
+            'OFFICE' : 0
+        }   
+
+    def increase(self, tag = ''):
+        self.counter[tag] += 1
+
+    def get_list(self):
+        return self.counter.values()
 
 class NNeighbor:
     BUS = 'BUS' # 버스정류장
@@ -122,7 +136,7 @@ class NSector:
         return "%s %s %s %s %s" % (self.city, self.divisition, self.name, self.no, self.loc)
 
 class NRegion:
-    def __init__(self, loc, name = '', no = 0) -> None:
+    def __init__(self, name='', loc = None, no = '') -> None:
         self.name = name
         self.loc = loc # type: NLocation
         self.no = no
@@ -166,12 +180,6 @@ class NAddon:
     @classmethod
     def get_default(cls):
         return NAddon([], [cls.TRADE_DEAL], [cls.ESTATE_APT])
-
-
-
-
-BASE_API_URL = "https://new.land.naver.com/api/"
-IS_LOGGING = True
 
 def get(url = "", params = {}):
     if IS_LOGGING is True : print('Get', BASE_API_URL + url)
@@ -226,7 +234,7 @@ def get_region_list(code = "0000000000"):
 
 def parse_region(region_obj = {}):
     if len(region_obj) < 1:
-        raise Exception("There is no that region")
+        return []
     regions = [] # type: list[NRegion]
     for obj in region_obj['regionList']:
         regions.append(NRegion(
@@ -269,3 +277,21 @@ def parse_things(results):
 
 def distance_between(l1 : NLocation, l2 : NLocation):
     return round(haversine(l1.get_tuple(), l2.get_tuple(), unit='m'))
+
+def get_distance_standard(standard = {}):
+    default_standard = {
+        'BUS': 500,
+        'METRO' : 500,
+        'INFANT' : 750,
+        'PRESCHOOL' : 750,
+        'SCHOOLPOI' : 2000,
+        'HOSPITAL' : 5000,
+        'PARKING' : 500,
+        'MART' : 500,
+        'CONVENIENCE': 250,
+        'WASHING': 500,
+        'BANK' : 1000,
+        'OFFICE' : 2000
+    }
+    default_standard.update(standard)
+    return default_standard
