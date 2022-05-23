@@ -1,5 +1,3 @@
-from audioop import add
-from pickle import TRUE
 from haversine import haversine
 from nre.con import *
 import requests
