@@ -6,8 +6,8 @@ BASE_API_URL = "https://new.land.naver.com/api/"
 IS_LOGGING = True
 
 def get(url = "", params = {}):
-    if IS_LOGGING is True : print('Get', BASE_API_URL + url)
     rep = requests.get(BASE_API_URL + url, params=params, headers={'User-Agent': '*'})
+    if IS_LOGGING is True : print('Get', rep.request.url)
     if rep.status_code != 200: raise Exception('Response Error')
     return rep.json()
 
@@ -98,7 +98,7 @@ def parse_things(results):
             continue
         res.append(NThing(
             v['complexName'],
-            v['realEstateTypeName'],
+            v['realEstateTypeCode'],
             v['completionYearMonth'],
             NLocation(v['latitude'], v['longitude']),
             NArea(v['minArea'], v['maxArea'], v['representativeArea'], v['floorAreaRatio']),

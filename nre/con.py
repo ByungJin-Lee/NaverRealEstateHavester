@@ -1,6 +1,10 @@
 from shapely.geometry import Point, Polygon
+import cv2
+import numpy as np
 
 class NLocation:
+    TO_INTEGER = 10 ** 8
+
     def __init__(self, lat, lon, zoom = 16):
         self.lat = lat if type(lat) == 'float' else float(lat)
         self.lon = lon if type(lon) == 'float' else float(lon)
@@ -22,13 +26,38 @@ class NLocation:
 
 class NMap:
     def __init__(self, shape_vertexs = []) -> None:
-        self.polys = [Polygon(vs) for vs in shape_vertexs]
+        self.vertexs = []
+        for vs in shape_vertexs:
+            if len(vs) == 0: continue
+            self.vertexs.append(vs)
+        self.polys = [Polygon(vs) for vs in self.vertexs]
+
     def is_in(self, loc : NLocation):
         p = Point(loc.lat, loc.lon)
         for poly in self.polys:
             if p.within(poly) is True:
                 return True
         return False
+
+    def get_img(self):
+        return [NMap.to_img(v) for v in self.vertexs]
+
+    @classmethod
+    def to_img(cls, vertexs: list):
+        ver = (np.array(vertexs) * NLocation.TO_INTEGER).astype(int)
+        ver_lat, ver_lon = ver[:, 0], ver[:,1]
+        mnlat, mnlon = min(ver_lat), min(ver_lon)
+        ver_lat = ver_lat - mnlat
+        ver_lon = ver_lon - mnlon
+        mxlat, mxlon = max(ver_lat), max(ver_lon)
+        ver_lat = (ver_lat / mxlat * 500).astype(int) + 6
+        ver_lon = (ver_lon / mxlon * 500).astype(int) + 6
+        ver = np.column_stack((ver_lat, ver_lon))
+        img = np.zeros((512,512), dtype=np.uint8) + 255
+        img = cv2.line(img, ver[0], ver[-1], (0,0,0), 5)
+        for i in range(len(ver) - 1):
+            img = cv2.line(img, ver[i], ver[i+1], (0,0,0), 5)
+        return img
 
 class NSector:
     def __init__(self, name, loc, no, city, divisition, vertex) -> None:
@@ -172,17 +201,20 @@ class NAddon:
     DIR_WN = 'WN' #북서
     DIR_EACH = [DIR_EE, DIR_ES, DIR_WW, DIR_WS, DIR_SS, DIR_EN, DIR_NN, DIR_WN]
 
-    def __init__(self, direction = [], tradeType = [], estateType = []) -> None:
-        self.direction = direction
+    def __init__(self, dir = [], tradeType = [], estateType = []) -> None:
+        self.dir = dir
         self.tradeType = tradeType
         self.estateType = estateType
     
     def get_param(self):
         return {
-            'directions' : ':'.join(self.direction),
-            'tradeType' : ':'.join(self.tradeType),
-            'realEstateType' : ':'.join(self.estateType)
+            'directions' : self.preprocess(self.dir),
+            'tradeType' : self.preprocess(self.tradeType),
+            'realEstateType' : self.preprocess(self.estateType)
         }
+    @classmethod
+    def preprocess(cls, value):
+        return value if type(value) == str else ':'.join(value)
     @classmethod
     def get_default(cls):
         return NAddon([], [cls.TRADE_DEAL], [cls.ESTATE_APT])
