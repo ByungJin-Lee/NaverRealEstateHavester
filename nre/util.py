@@ -129,3 +129,15 @@ def get_distance_standard(standard = {}):
     }
     default_standard.update(standard)
     return default_standard
+
+def things_to_dusts(things : list[NThing], dimension : NDimension):
+    dusts = []
+    for t in things:
+        dusts.append(NDust(t.type, dimension.reduction([t.loc.lat, t.loc.lon])))
+    return dusts
+
+def neighbors_to_dusts(neis : list[NNeighbor], dimension : NDimension):
+    dusts = []
+    for t in neis:
+        dusts.append(NDust(t.type, dimension.reduction([t.loc.lat, t.loc.lon])))
+    return dusts
