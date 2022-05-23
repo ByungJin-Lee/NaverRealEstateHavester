@@ -139,7 +139,7 @@ class NThing:
         self.deal.mn, self.deal.mx, self.deal.med, self.lease.mn, self.lease.mx, self.lease.med, self.udeal.mn, self.udeal.mx, self.udeal.med, self.ulease.mn, self.ulease.mx, self.ulease.med, self.loc.lat, self.loc.lon]
 
     def __str__(self) -> str:
-        return "%s %s %s %s | %s" % (self.name, self.type, self.buildTime, self.deal, self.lease)
+        return "%s %s %s" % (self.name, self.type, self.buildTime)
 
 class NRegion:
     def __init__(self, name='', loc = None, no = '') -> None:
@@ -179,7 +179,7 @@ class NAddon:
     
     def get_param(self):
         return {
-            'direction' : ':'.join(self.direction),
+            'directions' : ':'.join(self.direction),
             'tradeType' : ':'.join(self.tradeType),
             'realEstateType' : ':'.join(self.estateType)
         }

@@ -1,3 +1,5 @@
+from audioop import add
+from pickle import TRUE
 from haversine import haversine
 from nre.con import *
 import requests
@@ -17,8 +19,8 @@ def get_neighborhood(loc : NLocation, nType = ''):
     res = get(NRE_ROUTER.NEIGHBORHOOD, param)
     return parse_neighbor(res)
 
-def get_things(sector: NSector, addon = NAddon.get_default()):
-    con = {
+def make_param_thing(sector : NSector, addon : NAddon = NAddon.get_default()):
+    param = {
         'zoom': sector.loc.zoom,
         'priceType': 'RETAIL',
         'markerId': '',
@@ -37,22 +39,31 @@ def get_things(sector: NSector, addon = NAddon.get_default()):
         'recentlyBuildYears':'',
         'minHouseHoldCount':'',
         'maxHouseHoldCount':'',
-        'showArticle':False,
+        'showArticle':True,
         'sameAddressGroup':False,
         'minMaintenanceCost':'',
         'maxMaintenanceCost':'',
     }
-    con.update(sector.get_param())
-    con.update(addon.get_param())
-    res = get(NRE_ROUTER.COMPLEX2, con)
+    param.update(sector.get_param())
+    param.update(addon.get_param())
+    return param
+
+def get_things(sector: NSector, addon = NAddon.get_default()):
+    res = get(NRE_ROUTER.COMPLEX2, make_param_thing(sector, addon))
     return parse_things(res)
 
+def make_param_sector(loc : NLocation):
+    return  {'centerLat':loc.lat, 'centerLon':loc.lon, 'zoom': loc.zoom}
+
 def get_sector(loc : NLocation):
-    res = get(NRE_ROUTER.CORTARS, {'centerLat':loc.lat, 'centerLon':loc.lon, 'zoom': loc.zoom})
+    res = get(NRE_ROUTER.CORTARS, make_param_sector(loc))
     return parse_sector(res)
 
+def make_param_region(code):
+    return {'cortarNo': code}
+
 def get_region_list(code = "0000000000"):
-    res = get(NRE_ROUTER.REGION_LIST, {'cortarNo': code})
+    res = get(NRE_ROUTER.REGION_LIST, make_param_region(code))
     return parse_region(res)
 
 def parse_region(region_obj = {}):
@@ -84,6 +95,8 @@ def parse_things(results):
     res = [] # type: list[NThing]
     for v in results:
         if 'minDealPrice' not in v and 'minLeasePrice' not in v:
+            continue
+        if v['dealCount'] == 0 and v['leaseCount'] == 0:
             continue
         res.append(NThing(
             v['complexName'],
