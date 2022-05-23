@@ -22,9 +22,13 @@ class NLocation:
 
 class NMap:
     def __init__(self, shape_vertexs = []) -> None:
-        self.poly = Polygon(shape_vertexs)
+        self.polys = [Polygon(vs) for vs in shape_vertexs]
     def is_in(self, loc : NLocation):
-        return Point(loc.lat, loc.lon).within(self.poly)
+        p = Point(loc.lat, loc.lon)
+        for poly in self.polys:
+            if p.within(poly) is True:
+                return True
+        return False
 
 class NSector:
     def __init__(self, name, loc, no, city, divisition, vertex) -> None:
@@ -33,7 +37,7 @@ class NSector:
         self.name = name
         self.loc = loc # type: NLocation
         self.no = no
-        self.map = NMap(vertex[0])
+        self.map = NMap(vertex)
     def get_param(self):
         around = self.loc.get_around_param()
         around.update({'cortarNo': self.no})
@@ -106,10 +110,9 @@ class NArea:
 
 class NPrice:
     def __init__(self, mn, mx, med) -> None:
-        self.mn = mn
-        self.mx = mx
-        self.med = med
-        self.avg = (mn + mx) / 2
+        self.mn = mn if mn != 0 else None
+        self.mx = mx if mx != 0 else None
+        self.med = med if med != 0 else None
 
     def __str__(self) -> str:
         return "%f %f" % (self.mn, self.mx)

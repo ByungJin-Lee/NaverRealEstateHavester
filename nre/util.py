@@ -91,10 +91,10 @@ def parse_things(results):
             v['completionYearMonth'],
             NLocation(v['latitude'], v['longitude']),
             NArea(v['minArea'], v['maxArea'], v['representativeArea'], v['floorAreaRatio']),
-            NPrice(v['minDealPrice'], v['maxDealPrice'], '' if 'medianDealPrice' not in v else v['medianDealPrice']),
-            NPrice(v['minLeasePrice'],v['maxLeasePrice'] , '' if 'medianLeasePrice' not in v else v['medianLeasePrice']),
-            NPrice(v['minDealUnitPrice'], v['maxDealUnitPrice'], '' if 'medianDealUnitPrice' not in v else v['medianDealUnitPrice']),
-            NPrice(v['minLeaseUnitPrice'], v['maxLeaseUnitPrice'], '' if 'medianLeaseUnitPrice' not in v else  v['medianLeaseUnitPrice'])
+            NPrice(v['minDealPrice'], v['maxDealPrice'], None if 'medianDealPrice' not in v else v['medianDealPrice']),
+            NPrice(v['minLeasePrice'],v['maxLeasePrice'] , None if 'medianLeasePrice' not in v else v['medianLeasePrice']),
+            NPrice(v['minDealUnitPrice'], v['maxDealUnitPrice'], None if 'medianDealUnitPrice' not in v else v['medianDealUnitPrice']),
+            NPrice(v['minLeaseUnitPrice'], v['maxLeaseUnitPrice'], None if 'medianLeaseUnitPrice' not in v else  v['medianLeaseUnitPrice'])
         ))
     return res
 
