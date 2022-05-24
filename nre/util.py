@@ -1,4 +1,3 @@
-import re
 from time import sleep
 from haversine import haversine
 from nre.con import *
@@ -126,26 +125,21 @@ def parse_sector(sector_json : dict):
 
 def parse_neighbor(data, sector : NSector, nType):
     res = [] # type: list[NNeighbor]
-    smap = sector.map
 
     if nType != NNeighbor.SCHOOL:
         for v in data['neighborhoods']:
-            nei = NNeighbor(
+            res.append(NNeighbor(
                 nType,
                 v['name'],
                 NLocation(v['latitude'], v['longitude'])
-            )
-            if smap.contain(nei.loc) is True:
-                res.append(nei)
+            ))
     else:
         for v in data:
-            nei = NNeighbor(
+            res.append(NNeighbor(
                 'PUB_SCHOOL' if v['organizationType'] == '공립' else 'PRI_SCHOOL',
                 v['schoolName'],
                 NLocation(v['latitude'], v['longitude']),
-            )
-            if smap.contain(nei.loc) is True:
-                res.append(nei)
+            ))
     return filter_item(res, lambda x : len(x.name), lambda x,y: x.name in y.name)
 
 def parse_things(results, sector : NSector, dir):
