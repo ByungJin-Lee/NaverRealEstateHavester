@@ -2,3 +2,5 @@ temp
 env
 __pycache__
 csv
+.csv
+*.csv

@@ -21,7 +21,7 @@ def get_neighborhood(sector : NSector, nType = ''):
         res = get(NRE_ROUTER.NEIGHBORHOOD, param)
     else:
         res = get(NRE_ROUTER.SCHOOL, param)
-    return parse_neighbor(res, sector, nType)
+    return parse_neighbor(res, nType)
 
 def make_param_thing(sector : NSector, addon : NAddon = NAddon.get_default()):
     param = {
@@ -123,7 +123,7 @@ def parse_region(region_obj = {}):
 def parse_sector(sector_json : dict):
     return NSector(sector_json['sectorName'], NLocation(sector_json['centerLat'], sector_json['centerLon']) , sector_json['sectorNo'], sector_json['cityName'], sector_json['divisionName'], sector_json['cortarVertexLists'])
 
-def parse_neighbor(data, sector : NSector, nType):
+def parse_neighbor(data, nType):
     res = [] # type: list[NNeighbor]
 
     if nType != NNeighbor.SCHOOL:
@@ -140,7 +140,10 @@ def parse_neighbor(data, sector : NSector, nType):
                 v['schoolName'],
                 NLocation(v['latitude'], v['longitude']),
             ))
-    return filter_item(res, lambda x : len(x.name), lambda x,y: x.name in y.name)
+
+    if nType == NNeighbor.PRESCHOOL or nType == NNeighbor.KID:
+        res = filter_item(res, lambda x : len(x.name), lambda x,y: x.name in y.name and x.name != y.name)
+    return res
 
 def parse_things(results, sector : NSector, dir):
     smap = sector.map
@@ -184,8 +187,8 @@ def get_distance_standard(standard = {}):
         'MART' : 500,
         'CONVENIENCE': 300,
         'WASHING': 500,
-        'BANK' : 1000,
-        'OFFICE' : 2000
+        'BANK' : 750,
+        'OFFICE' : 1500
     }
     default_standard.update(standard)
     return default_standard
