@@ -15,9 +15,14 @@ def get(url = "", params = {}):
 
 def get_neighborhood(sector : NSector, nType = ''):
     param = sector.loc.get_around_param()
-    param.update({ 'type' : nType, 'zoom' : sector.loc.zoom })
-    res = get(NRE_ROUTER.NEIGHBORHOOD, param)
-    return parse_neighbor(res, sector)
+    param.update({'zoom' : sector.loc.zoom})
+    res = None
+    if nType != NNeighbor.SCHOOL:
+        param.update({ 'type' : nType})
+        res = get(NRE_ROUTER.NEIGHBORHOOD, param)
+    else:
+        res = get(NRE_ROUTER.SCHOOL, param)
+    return parse_neighbor(res, sector, nType)
 
 def make_param_thing(sector : NSector, addon : NAddon = NAddon.get_default()):
     param = {
@@ -119,19 +124,29 @@ def parse_region(region_obj = {}):
 def parse_sector(sector_json : dict):
     return NSector(sector_json['sectorName'], NLocation(sector_json['centerLat'], sector_json['centerLon']) , sector_json['sectorNo'], sector_json['cityName'], sector_json['divisionName'], sector_json['cortarVertexLists'])
 
-def parse_neighbor(data, sector : NSector):
+def parse_neighbor(data, sector : NSector, nType):
     res = [] # type: list[NNeighbor]
-    nType = data['type']
     smap = sector.map
-    for v in data['neighborhoods']:
-        nei = NNeighbor(
-            nType,
-            v['name'],
-            NLocation(v['latitude'], v['longitude'])
-        )
-        if smap.contain(nei.loc) is True:
-            res.append(nei)
-    return res
+
+    if nType != NNeighbor.SCHOOL:
+        for v in data['neighborhoods']:
+            nei = NNeighbor(
+                nType,
+                v['name'],
+                NLocation(v['latitude'], v['longitude'])
+            )
+            if smap.contain(nei.loc) is True:
+                res.append(nei)
+    else:
+        for v in data:
+            nei = NNeighbor(
+                'PUB_SCHOOL' if v['organizationType'] == '공립' else 'PRI_SCHOOL',
+                v['schoolName'],
+                NLocation(v['latitude'], v['longitude']),
+            )
+            if smap.contain(nei.loc) is True:
+                res.append(nei)
+    return filter_item(res, lambda x : len(x.name), lambda x,y: x.name in y.name)
 
 def parse_things(results, sector : NSector, dir):
     smap = sector.map
@@ -168,7 +183,8 @@ def get_distance_standard(standard = {}):
         'METRO' : 500,
         'INFANT' : 750,
         'PRESCHOOL' : 750,
-        'SCHOOLPOI' : 1000,
+        'PRI_SCHOOL' : 1000,
+        'PUB_SCHOOL' : 1000,
         'HOSPITAL' : 2000,
         'PARKING' : 500, 
         'MART' : 500,
@@ -219,10 +235,7 @@ def update_things_intersection(things : list[NThing], neighbors : list[NNeighbor
 def get_all_neighbors(sector):
     neighbors = [] # 편의시설 기록
     for nType in NNeighbor.EACH: # 모든 편의시설
-        values = get_neighborhood(sector, nType)
-        if nType == NNeighbor.SCHOOL:
-            values = filter_item(values, lambda x : len(x.name), lambda x,y: x.name in y.name)
-        neighbors.extend(values)
+        neighbors.extend(get_neighborhood(sector, nType))
     return neighbors
 
 def get_things_each_direction(sector):

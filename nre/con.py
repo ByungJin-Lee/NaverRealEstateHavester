@@ -146,7 +146,8 @@ class NDimension:
             'INFANT': (255,255,0), # 어린이집
             'PRESCHOOL': (255,255,0), # 유치원
             
-            'SCHOOLPOI': (255,0,255), # 학교
+            'PRI_SCHOOL': (0,0,0),
+            'PUB_SCHOOL': (0,0,0),
             'HOSPITAL': (0,0,0), # 병원
             'PARKING': (0,0,0), # 주차장
             'MART': (0,0,0), # 마트
@@ -176,10 +177,12 @@ class NRE_ROUTER:
     CORTARS='cortars'
     COMPLEX2='complexes/single-markers/2.0'
     NEIGHBORHOOD='regions/neighborhoods'
+    SCHOOL='schools'
 
 class NNeighborAround:
-    HEADER = ['BUS','METRO','INFANT','PRESCHOOL','SCHOOLPOI','HOSPITAL',
-    'PARKING','MART','CONVENIENCE','WASHING','BANK','OFFICE']
+    HEADER = ['BUS','METRO','INFANT','PRESCHOOL','HOSPITAL',
+    'PARKING','MART','CONVENIENCE','WASHING','BANK','OFFICE',
+    'PRI_SCHOOL', 'PUB_SCHOOL']
 
     def __init__(self) -> None:
         self.counter = {
@@ -187,15 +190,16 @@ class NNeighborAround:
             'METRO' : 0,
             'INFANT' : 0,
             'PRESCHOOL' : 0,
-            'SCHOOLPOI' : 0,
             'HOSPITAL' : 0,
             'PARKING' : 0,
             'MART' : 0,
             'CONVENIENCE': 0,
             'WASHING': 0,
             'BANK' : 0,
-            'OFFICE' : 0
-        }   
+            'OFFICE' : 0,
+            'PRI_SCHOOL' : 0,
+            'PUB_SCHOOL' : 0
+        }
 
     def increase(self, tag = ''):
         self.counter[tag] += 1
