@@ -1,3 +1,5 @@
+import re
+from time import sleep
 from haversine import haversine
 from nre.con import *
 import requests
@@ -56,6 +58,45 @@ def make_param_sector(loc : NLocation):
 def get_sector(loc : NLocation):
     res = get(NRE_ROUTER.CORTARS, make_param_sector(loc))
     return parse_sector(res)
+
+def split_list(list : list, k : int = 5):
+    splited = []
+    step = len(list) // k
+    left = 0
+    end = step * k
+    while left < end:
+        splited.append(list[left : left + step])
+        left += step
+    
+    if left <= len(list):
+        splited.append(list[left:])
+    return splited
+
+
+def default_loop(list):
+    return list
+
+def get_sector_list(regions : list[NRegion], delay : int = 2, interval : int = 10, loop = default_loop):
+    sectors = []
+    cancel = []
+    loading = 0
+    for reg in loop(regions):
+        try:
+            sector = get_sector(reg.loc)
+            sectors.append(sector)
+            loading += 1
+            if loading == interval:
+                sleep(delay)
+                loading = 0
+        except:
+            print("Error", reg)
+            cancel.append(reg)
+            get_sleep(20)
+            continue
+    return sectors, cancel
+
+def get_sleep(delay : int = 20):
+    sleep(delay)
 
 def make_param_region(code):
     return {'cortarNo': code}
@@ -141,3 +182,13 @@ def neighbors_to_dusts(neis : list[NNeighbor], dimension : NDimension):
     for t in neis:
         dusts.append(NDust(t.type, dimension.reduction([t.loc.lat, t.loc.lon])))
     return dusts
+
+def remove_filter_item(list, to_key, is_dup):
+    items = sorted(list, key=to_key)
+    
+    for it in items[:]:
+        for n in items[:]:
+
+        
+
+    return items
