@@ -2,6 +2,10 @@ from shapely.geometry import Point, Polygon
 import cv2
 import numpy as np
 
+def LIST_EXTENDS(v1 : list, v2 : list):
+    v1.extend(v2)
+    return v1
+
 class NLocation:
     TO_INTEGER = 10 ** 8
 
@@ -240,8 +244,15 @@ class NPrice:
         return "%f %f" % (self.mn, self.mx)
 
 class NThing:
-    HEADER = ['Name', 'Type', 'Build', 'Dir' ,'minArea', 'maxArea', 'representativeArea', 'floorAreaRatio', 
-        'minDeal', 'maxDeal', 'medianDeal', 'minLease', 'maxLease', 'medianLease', 'minDealUnit', 'maxDealUnit', 'medianDealUnit', 'minLeaseUnit', 'maxLeaseUnit', 'medianLeaseUnit','Lat', 'Lon']
+    HEADER = LIST_EXTENDS(['Name', 'Type', 'Build', 
+    'Dir' ,'minArea', 'maxArea', 
+    'representativeArea', 'floorAreaRatio', 
+        'minDeal', 'maxDeal', 'medianDeal', 
+        'minLease', 'maxLease', 'medianLease', 
+        'minDealUnit', 'maxDealUnit', 'medianDealUnit', 
+        'minLeaseUnit', 'maxLeaseUnit', 'medianLeaseUnit',
+        'Lat', 'Lon'],
+        NNeighborAround.HEADER)
 
     def __init__(self, name, type, buildTime, loc, area, deal, lease, udeal, ulease) -> None:
         self.type = type
@@ -257,8 +268,8 @@ class NThing:
         self.neiAround = NNeighborAround()
 
     def get_list(self):
-        return [self.name, self.type, self.buildTime, self.dir, self.area.mn, self.area.mx, self.area.representative, self.area.floorRatio,
-        self.deal.mn, self.deal.mx, self.deal.med, self.lease.mn, self.lease.mx, self.lease.med, self.udeal.mn, self.udeal.mx, self.udeal.med, self.ulease.mn, self.ulease.mx, self.ulease.med, self.loc.lat, self.loc.lon]
+        return LIST_EXTENDS([self.name, self.type, self.buildTime, self.dir, self.area.mn, self.area.mx, self.area.representative, self.area.floorRatio,
+        self.deal.mn, self.deal.mx, self.deal.med, self.lease.mn, self.lease.mx, self.lease.med, self.udeal.mn, self.udeal.mx, self.udeal.med, self.ulease.mn, self.ulease.mx, self.ulease.med, self.loc.lat, self.loc.lon], self.neiAround.get_list())
 
     def __str__(self) -> str:
         return "%s %s %s" % (self.name, self.type, self.buildTime)
