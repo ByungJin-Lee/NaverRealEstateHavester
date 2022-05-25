@@ -88,7 +88,7 @@ class NDimension:
 
     @classmethod
     def fit_scale_with_split(cls, list, scale):
-        x, y = cls.split_x_y(cls.upper(list))
+        x, y = cls.split_x_y(list)
         return np.column_stack((
             cls.fit_scale(x, scale[0]),
             cls.fit_scale(y, scale[1], 1)
@@ -97,16 +97,24 @@ class NDimension:
     @classmethod
     def transform_type(cls, value):
         if type(value) == np.ndarray:
-            return value.astype(int)
+            return value
         if type(value) == list:
             return np.array(value)
+        return value
+    
+    @classmethod
+    def to_integer(cls, value):
+        if type(value) == np.ndarray:
+            return value.astype(int)
+        if type(value) == list:
+            return np.array(value).astype(int)
         return int(value)
     
     @classmethod
     def fit_scale(cls, var, scale, axis=0):
-        var = cls.transform_type(var)
+        var = cls.transform_type(cls.upper(var))
         scaled = ((var - scale[0]) * NDimension.RESOLUTION[axis] // scale[1]) + NDimension.PADDING[axis]
-        return cls.transform_type(scaled)
+        return cls.to_integer(scaled)
     
     @classmethod
     def get_scale(cls, vertexs):

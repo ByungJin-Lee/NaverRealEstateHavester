@@ -196,13 +196,19 @@ def get_distance_standard(standard = {}):
 def things_to_dusts(things : list[NThing], dimension : NDimension):
     dusts = []
     for t in things:
-        dusts.append(NDust(t.type, dimension.fit_scale([t.loc.lat, t.loc.lon])))
+        dusts.append(NDust(t.type, [
+            dimension.fit_scale(t.loc.lat, dimension.x_scale), 
+            dimension.fit_scale(t.loc.lon, dimension.y_scale, 1)
+            ]))
     return dusts
 
 def neighbors_to_dusts(neis : list[NNeighbor], dimension : NDimension):
     dusts = []
     for t in neis:
-        dusts.append(NDust(t.type, dimension.fit_scale([t.loc.lat, t.loc.lon])))
+        dusts.append(NDust(t.type, [
+            dimension.fit_scale(t.loc.lat, dimension.x_scale), 
+            dimension.fit_scale(t.loc.lon, dimension.y_scale, 1)
+            ]))
     return dusts
 
 def neighbor_prefix_flt(lhs : NNeighbor, rhs : NNeighbor):
