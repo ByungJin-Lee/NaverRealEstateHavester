@@ -188,7 +188,7 @@ def get_distance_standard(standard = {}):
         'CONVENIENCE': 300,
         'WASHING': 500,
         'BANK' : 750,
-        'OFFICE' : 1500
+        'OFFICE' : 1250
     }
     default_standard.update(standard)
     return default_standard
@@ -252,3 +252,8 @@ def get_things_each_direction(sector):
         addon.dir = dirr # 방향 조건 선택
         things.extend(get_things(sector, addon))
     return things
+
+def get_all_on_sector(sector : NSector):
+    things = get_things_each_direction(sector)
+    neighbors = get_all_neighbors(sector)
+    return (sector, things, neighbors)
