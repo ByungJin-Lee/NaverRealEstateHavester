@@ -57,27 +57,8 @@ class NDimension:
     LINE_WIDTH = 5
 
     def __init__(self, vertexs: list) -> None:
-        self.s_lat, self.s_lon = NDimension.preprocess(vertexs)
-        self.outlines = [self.reduction_list(v) for v in vertexs]
-    
-    def reduction_list(self, data):
-        ver_lat, ver_lon = NDimension.upper_and_split(data)
-        ver_lat = ver_lat - self.s_lat[0]
-        ver_lon = ver_lon - self.s_lon[0]
-        return np.column_stack((
-                NDimension.calc_with_ratio(ver_lat, self.s_lat[1]).astype(int),
-                NDimension.calc_with_ratio(ver_lon, self.s_lon[1], axis=1).astype(int)
-            ))
-    
-    def reduction(self, unit):
-        lat, lon = unit
-        lat = NDimension.upper(lat) - self.s_lat[0]
-        lon = NDimension.upper(lon) - self.s_lon[0]
-
-        return [
-            int(NDimension.calc_with_ratio(lat, self.s_lat[1])), 
-            int(NDimension.calc_with_ratio(lon, self.s_lon[1]))
-        ]
+        self.x_scale, self.y_scale = NDimension.get_scale(vertexs)
+        self.outlines = [NDimension.fit_scale_with_split(v, (self.x_scale, self.y_scale)) for v in vertexs]
 
     def get_img(self, data : list[NDust] = [], tag_color = {}):
         img = self.get_bg_img()
@@ -106,27 +87,44 @@ class NDimension:
         return img
 
     @classmethod
-    def calc_with_ratio(cls, ver, ratio, axis=0):
-        return (ver / ratio * NDimension.RESOLUTION[axis]) + NDimension.PADDING[axis]
+    def fit_scale_with_split(cls, list, scale):
+        x, y = cls.split_x_y(cls.upper(list))
+        return np.column_stack((
+            cls.fit_scale(x, scale[0]),
+            cls.fit_scale(y, scale[1], 1)
+        ))
     
     @classmethod
-    def preprocess(cls, vertexs):
+    def transform_type(cls, value):
+        if type(value) == np.ndarray:
+            return value.astype(int)
+        if type(value) == list:
+            return np.array(value)
+        return int(value)
+    
+    @classmethod
+    def fit_scale(cls, var, scale, axis=0):
+        var = cls.transform_type(var)
+        scaled = ((var - scale[0]) * NDimension.RESOLUTION[axis] // scale[1]) + NDimension.PADDING[axis]
+        return cls.transform_type(scaled)
+    
+    @classmethod
+    def get_scale(cls, vertexs):
         union = []
         for vl in vertexs: union.extend(vl)
-
-        ver_lat, ver_lon = cls.upper_and_split(union)
-        mnlat, mnlon = min(ver_lat), min(ver_lon)
-        mxlat, mxlon = max(ver_lat - mnlat), max(ver_lon - mnlon)
-        return (mnlat, mxlat), (mnlon, mxlon)
+        x, y = cls.split_x_y(cls.upper(union))
+        mnX, mnY = min(x), min(y)
+        return (mnX, max(x) - mnX), (mnY, max(y) - mnY)
 
     @classmethod
     def upper(cls, var):
-        return var * NLocation.TO_INTEGER
+        return cls.transform_type(var) * NLocation.TO_INTEGER
 
     @classmethod
-    def upper_and_split(cls, vertexs):
-        ver = cls.upper(np.array(vertexs)).astype(int)
-        return ver[:, 0], ver[:,1]
+    def split_x_y(cls, var):
+        if type(var) == list:
+            var = np.array(var)
+        return var[:, 0], var[:,1]
 
     @classmethod
     def get_default_tag_color(cls):
