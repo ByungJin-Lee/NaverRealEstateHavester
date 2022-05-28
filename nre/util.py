@@ -1,6 +1,6 @@
 from time import sleep
 from haversine import haversine
-from nre.con import *
+from nre.classes import *
 import requests
 
 BASE_API_URL = "https://new.land.naver.com/api/"
