@@ -243,7 +243,7 @@ def get_all_neighbors(sector):
 
 def get_things_each_direction(sector):
     addon = NAddon(
-        #direction=nc.NAddon.DIR_EACH, #전 방향 탐색의 경우 사용 - 아래 로직을 바꾸세요
+        #direction=nc.NAddon.DIR_EACH, #전 방향 탐색
         tradeType=[NAddon.TRADE_DEAL, NAddon.TRADE_LEASE], #목표 거래 - 매매, 전세
         estateType=[NAddon.ESTATE_APT, NAddon.ESTATE_OPST] #목표 매물 - 아파트, 오피스텔
     )
