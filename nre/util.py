@@ -4,7 +4,8 @@ from nre.classes import *
 import requests
 
 BASE_API_URL = "https://new.land.naver.com/api/"
-#Check Log --
+#Check Log 
+#Time
 IS_LOGGING = True
 
 def get(url = "", params = {}):
